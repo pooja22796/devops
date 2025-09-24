@@ -13,7 +13,7 @@ pipeline {
         stage('Build') {
             agent { label 'linuxgit' }
             steps {
-                 'mvn clean install'
+                 sh 'mvn clean install'
             }
         }
     }
