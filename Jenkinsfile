@@ -1,15 +1,19 @@
 pipeline {
-    agent none
-    parameters {
-        string(name: 'BRANCH', defaultValue: 'dev', description: 'Git branch to build')
-    }
+    agent any
+
     stages {
-        stage('Clone') {
-            agent { label 'linuxgit' }
+        stage('Checkout') {
             steps {
-                git branch: "${params.BRANCH}", url: 'https://github.com/pooja22796/devops.git'
+                git branch: 'dev',
+                    url: 'https://github.com/pooja22796/devops.git'  
             }
         }
-       
+
+        stage('Build') {
+            steps {
+                echo "First time build. Skipping changelog."
+            }
+        }
     }
-}  
+}
+
