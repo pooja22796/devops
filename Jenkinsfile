@@ -10,11 +10,6 @@ pipeline {
                 git branch: "${params.BRANCH}", url: 'https://github.com/pooja22796/devops.git'
             }
         }
-        stage('Build') {
-            agent { label 'linuxgit' }
-            steps {
-                 sh 'mvn clean install'
-            }
-        }
+       
     }
 }  
