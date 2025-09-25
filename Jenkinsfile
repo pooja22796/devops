@@ -46,7 +46,7 @@ pipeline {
                     <p>Build marked <b>UNSTABLE</b> for <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>
                     <p>Check console output: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
                 """,
-                to: 'yourteam@example.com, qa@example.com'
+                to: 'pooja232shetty@gmail.com'
             )
         }
 
@@ -58,7 +58,7 @@ pipeline {
                     <p><b>Build FAILED</b> in job <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>
                     <p>See console output: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
                 """,
-                to: 'yourteam@example.com, dev@example.com'
+                to: 'pooja232shetty@gmail.com'
             )
         }
 
@@ -67,4 +67,3 @@ pipeline {
         }
     }
 }
-
