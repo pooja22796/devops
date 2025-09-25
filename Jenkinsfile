@@ -5,7 +5,7 @@ pipeline {
         GIT_REPO = 'https://github.com/pooja22796/devops.git'
         BRANCH = 'cmake'
     }
-    
+
     stages {
         stage('Clean Workspace') {
             steps {
@@ -47,4 +47,4 @@ post {
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']]
             )
         }
-    }
+
