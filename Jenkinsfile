@@ -9,42 +9,62 @@ pipeline {
     stages {
         stage('Clean Workspace') {
             steps {
-                echo 'CLeaning workspace'
+                echo 'Cleaning workspace'
                 deleteDir()
             }
         }
-        stage('Lint') {
+
+        stage('Clone Repo') {
             steps {
-                echo "Cloning the repo from Github ........."
-                git branch: "${BRANCH}",
+                echo "Cloning the repo from GitHub..."
+                git(
+                    branch: "${BRANCH}",
                     url: "${GIT_REPO}"
+                )
             }
         }
-        stage('Build') {
+
+        stage('Build Firmware') {
             steps {
                 sh 'dos2unix build.sh'
                 sh 'chmod +x build.sh'
-                sh 'bash build.sh'
+                sh './build.sh'
             }
         }
     }
-}
-post {
-        always {
+
+    post {
+        success {
+            echo '✅ Build succeeded!'
+        }
+
         unstable {
-            echo 'Build marked as UNSTABLE!'
-            emailext (
+            echo '⚠️ Build marked as UNSTABLE!'
+            emailext(
                 subject: "Build Unstable: ${env.JOB_NAME} [#${env.BUILD_NUMBER}]",
-                body: """<p>Build became <b>UNSTABLE</b> in job <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>""",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                body: """
+                    <p>Build marked <b>UNSTABLE</b> for <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>
+                    <p>Check console output: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """,
+                to: 'yourteam@example.com, qa@example.com'
             )
         }
+
         failure {
-            echo 'Build failed!'
-            emailext (
+            echo '❌ Build failed!'
+            emailext(
                 subject: "Build Failed: ${env.JOB_NAME} [#${env.BUILD_NUMBER}]",
-                body: """<p>Build failed in job <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>""",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                body: """
+                    <p><b>Build FAILED</b> in job <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>
+                    <p>See console output: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """,
+                to: 'yourteam@example.com, dev@example.com'
             )
         }
+
+        always {
+            echo '🧹 Final cleanup (if needed)'
+        }
+    }
+}
 
