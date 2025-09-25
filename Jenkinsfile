@@ -36,12 +36,20 @@ pipeline {
     post {
         success {
             echo '✅ Build succeeded!'
+            emailext(
+                subject: "✅ Build Success: ${env.JOB_NAME} [#${env.BUILD_NUMBER}]",
+                body: """
+                    <p><b>Build SUCCESSFUL</b> for job <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>
+                    <p>Check console output: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """,
+                to: 'pooja232shetty@gmail.com'
+            )
         }
 
         unstable {
             echo '⚠️ Build marked as UNSTABLE!'
             emailext(
-                subject: "Build Unstable: ${env.JOB_NAME} [#${env.BUILD_NUMBER}]",
+                subject: "⚠️ Build Unstable: ${env.JOB_NAME} [#${env.BUILD_NUMBER}]",
                 body: """
                     <p>Build marked <b>UNSTABLE</b> for <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>
                     <p>Check console output: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
@@ -53,7 +61,7 @@ pipeline {
         failure {
             echo '❌ Build failed!'
             emailext(
-                subject: "Build Failed: ${env.JOB_NAME} [#${env.BUILD_NUMBER}]",
+                subject: "❌ Build Failed: ${env.JOB_NAME} [#${env.BUILD_NUMBER}]",
                 body: """
                     <p><b>Build FAILED</b> in job <b>${env.JOB_NAME}</b> [#${env.BUILD_NUMBER}]</p>
                     <p>See console output: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
