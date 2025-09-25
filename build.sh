@@ -1,19 +1,15 @@
 #!/bin/bash
-set -e  # Exit on error
+set -e
 
-# Move to project root (if not already there)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
-
-# Create and enter build directory
+cd "$(dirname "$0")"
 mkdir -p build
 cd build
 
-# Run cmake on the parent folder
-cmake ..
+echo "📦 Running CMake..."
+time cmake ..
 
-# Build the firmware
-make
+echo "⚙️ Building with Make (parallel)..."
+time make -j$(nproc)
 
 echo "✅ Build output:"
 ls -lh *.elf *.bin
