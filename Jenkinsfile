@@ -1,20 +1,42 @@
 pipeline {
-    agent none
-    parameters {
-        string(name: 'BRANCH', defaultValue: 'dev', description: 'Git branch to build')
+    agent any
+
+    tools {
+        maven 'Maven 3'   // Make sure this matches the Maven installation in Jenkins
+        jdk 'JDK 17'      // Adjust based on your JDK version
     }
+
     stages {
-        stage('Clone') {
-            agent { label 'linuxgit' }
+        stage('Checkout') {
             steps {
-                git branch: "${params.BRANCH}", url: 'https://github.com/pooja22796/devops.git'
+                git url: 'https://your-git-repo-url.git', branch: 'main'
             }
         }
-        stage('Build') {
-            agent { label 'linuxgit' }
+
+        stage('Build & Test') {
             steps {
-                 'mvn clean install'
+                sh 'mvn clean test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                archiveArtifacts artifacts: 'target/site/jacoco/*', fingerprint: true
             }
         }
     }
-}  
+
+    post {
+        always {
+            junit '**/target/surefire-reports/*.xml'
+        }
+    }
+}
+
