@@ -1,15 +1,10 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven 3'   // Make sure this matches the Maven installation in Jenkins
-        jdk 'JDK 17'      // Adjust based on your JDK version
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://your-git-repo-url.git', branch: 'main'
+                git url: 'https://github.com/pooja22796/devops.git', branch: 'main'
             }
         }
 
