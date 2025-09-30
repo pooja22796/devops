@@ -1,13 +1,14 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true) // Prevents checkout before stages
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                // Clean the workspace before checking out code
                 deleteDir()
-
-                // Clone the repo
                 git url: 'https://github.com/pooja22796/devops.git', branch: 'feature1'
             }
         }
