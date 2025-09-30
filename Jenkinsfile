@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/pooja22796/devops.git', branch: 'main'
+                git url: 'https://github.com/pooja22796/devops.git', branch: 'feature1'
             }
         }
 
