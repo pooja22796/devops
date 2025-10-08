@@ -14,7 +14,7 @@ pipeline {
         stage('Clean Workspace') {
             steps {
                 echo '[🧹] Cleaning workspace...'
-                deleteDir()  // Clean workspace before build (optional)
+                deleteDir()
             }
         }
 
@@ -28,7 +28,7 @@ pipeline {
         stage('Build Firmware') {
             steps {
                 echo "[⚙️] Preparing build script..."
-                sh 'dos2unix build.sh || true'  // ignore if dos2unix not installed
+                sh 'dos2unix build.sh || true'
                 sh 'chmod +x build.sh'
                 echo "[🚀] Running build.sh..."
                 sh './build.sh'
@@ -36,9 +36,10 @@ pipeline {
             }
         }
 
-        stage('Sonarqube Analysis') {
+        stage('SonarQube Analysis') {
             steps {
-                withSonarqubeEnv('SonarScanner') {
+                // Make sure this matches the server name from "Configure System"
+                withSonarQubeEnv('SonarQube') {
                     sh 'sonar-scanner'
                 }
             }
