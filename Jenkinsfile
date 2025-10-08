@@ -37,9 +37,11 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            tools {
+                sonarQubeScanner 'SonarScanner'  // Must match tool name in Global Tool Configuration
+            }
             steps {
-                // Make sure this matches the server name from "Configure System"
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('SonarQube') {  // Must match name of configured SonarQube server in Jenkins
                     sh 'sonar-scanner'
                 }
             }
