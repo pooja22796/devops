@@ -32,6 +32,7 @@ pipeline {
                 )
             }
         }
+        
 
         // ⚙️ Prepare and build the firmware using build.sh
         stage('Build Firmware') {
@@ -48,6 +49,13 @@ pipeline {
                 echo "[🚀] Starting build.sh"
                 sh 'time ./build.sh'
                 echo "[✅] Finished build.sh"
+            }
+        }
+        stage('Sonarqube Analysis') {
+            steps {
+                withSonarqubeEnv('Sonarqube'){
+                    sh 'sonar-scanner'
+                }
             }
         }
     }
