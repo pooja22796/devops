@@ -35,6 +35,13 @@ pipeline {
                 echo "[✅] build.sh finished"
             }
         }
+        stage('Check sonar-scanner') {
+    steps {
+        sh 'which sonar-scanner || echo "sonar-scanner NOT found in PATH!"'
+        sh 'sonar-scanner --version || echo "Failed to run sonar-scanner"'
+    }
+}
+
 
         stage('SonarQube Analysis') {
             steps {
