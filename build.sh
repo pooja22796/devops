@@ -13,3 +13,7 @@ time make -j$(nproc)
 
 echo "✅ Build output:"
 ls -lh *.elf *.bin
+
+# 👇 NEW SECTION: Create output folder and copy .bin files
+mkdir -p output
+cp -v *.bin output/
