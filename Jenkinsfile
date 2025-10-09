@@ -50,6 +50,7 @@ pipeline {
                             }
                         ]
                     }"""
+                    sh 'ls -lh build/output || echo "No .bin files found!"'
                     server.upload(uploadSpec)
                     echo "[📦] Uploaded .bin files to Artifactory."
                 }
