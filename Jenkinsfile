@@ -1,89 +1,122 @@
-pipeline { 
+pipeline {
     agent { label 'linuxgit' }
-
-    options {
-        timestamps()
-    }
 
     environment {
         GIT_REPO = 'https://github.com/pooja22796/devops.git'
         BRANCH = 'cmake'
+
+        // SonarCloud Configuration
+        SONARQUBE_ENV = 'SonarCloud'
+        SONAR_ORGANIZATION = 'pooja22796'
+        SONAR_PROJECT_KEY = 'pooja22796'
     }
 
     stages {
-
-        stage('Clean Workspace') {
+        stage('Prepare Tools') {
             steps {
-                echo '[🧹] Cleaning workspace...'
-                deleteDir()
+                echo 'Installing required tools...'
+                sh '''
+                    if ! command -v pip3 &>/dev/null; then
+                        sudo yum install -y python3 python3-pip || true
+                    fi
+
+                    pip3 install --quiet cmakelint
+
+                    if ! command -v dos2unix &>/dev/null; then
+                        sudo yum install -y dos2unix || true
+                    fi
+
+                    if ! command -v cmake &>/dev/null; then
+                        sudo yum install -y epel-release || true
+                        sudo yum install -y cmake || true
+                    fi
+
+                    if ! command -v gcc &>/dev/null; then
+                        sudo yum install -y gcc gcc-c++ || true
+                    fi
+                '''
             }
         }
 
-        stage('Clone Repo') {
+        stage('Lint') {
             steps {
-                echo "[📥] Cloning branch '${BRANCH}' from GitHub..."
-                git(branch: "${BRANCH}", url: "${GIT_REPO}")
+                echo 'Running lint checks on main.c...'
+                sh '''
+                    if [ -f src/main.c ]; then
+                        cmakelint src/main.c > lint_report.txt
+                    else
+                        echo "main.c not found!"
+                        exit 1
+                    fi
+                '''
             }
-        }
-
-        stage('Build Firmware') {
-            steps {
-                echo "[⚙️] Preparing build script..."
-                sh 'dos2unix build.sh || true'
-                sh 'chmod +x build.sh'
-                echo "[🚀] Running build.sh..."
-                sh './build.sh'
-                echo "[✅] build.sh finished"
-            }
-        }
-
-        // 🔽 New Stage: Upload .bin to Artifactory
-        stage('Push .bin to Artifactory') {
-            steps {
-                script {
-                    def server = Artifactory.server('trial-artifactory') // Match the Server ID
-                    def uploadSpec = """{
-                        "files": [
-                            {
-                                "pattern": "build/output/*.bin",
-                                "target": "generic-local/builds/${env.JOB_NAME}/${env.BUILD_NUMBER}/"
-                            }
-                        ]
-                    }"""
-                    sh 'ls -lh build/output || echo "No .bin files found!"'
-                    server.upload(uploadSpec)
-                    echo "[📦] Uploaded .bin files to Artifactory."
+            post {
+                always {
+                    archiveArtifacts artifacts: 'lint_report.txt', fingerprint: true
+                    fingerprint 'main.c'
                 }
             }
         }
 
-        stage('Check sonar-scanner') {
+        stage('Build') {
             steps {
-                echo '[🔍] Checking sonar-scanner availability...'
-                sh 'which sonar-scanner || echo "sonar-scanner NOT found in PATH!"'
-                sh 'sonar-scanner --version || echo "Failed to run sonar-scanner"'
+                echo 'Running build with CMake...'
+                sh '''
+                    if [ -f CMakeLists.txt ]; then
+                        mkdir -p build
+                        cd build
+                        cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+                        make -j$(nproc)
+                        cp compile_commands.json ..
+                    else
+                        echo "CMakeLists.txt not found!"
+                        exit 1
+                    fi
+                '''
             }
         }
-
+        stage('Unit Tests') {
+            steps {
+                echo 'Running unit tests...'
+                sh '''
+                    if [ -d build ]; then
+                        cd build
+                        # Run all registered CTest tests
+                        ctest --output-on-failure
+                    else
+                        echo "Build directory not found!"
+                        exit 1
+                    fi
+                '''
+            }
+        }
         stage('SonarQube Analysis') {
             steps {
-                echo '[📊] Running SonarQube analysis...'
-                withSonarQubeEnv('SonarQube') {
-                    sh '/opt/sonar-scanner/bin/sonar-scanner || echo "SonarQube scan failed!"'
+                echo 'Running SonarQube (SonarCloud) analysis...'
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh '''
+                        sonar-scanner \
+                          -Dsonar.organization=${SONAR_ORGANIZATION} \
+                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                          -Dsonar.sources=src \
+                          -Dsonar.cfamily.compile-commands=compile_commands.json \
+                          -Dsonar.host.url=https://sonarcloud.io \
+                          -Dsonar.sourceEncoding=UTF-8
+                    '''
                 }
             }
         }
     }
 
     post {
+        always {
+            echo 'Pipeline finished.'
+        }
         success {
-            echo '[✅] Pipeline completed successfully.'
+            echo 'Build, lint, and SonarCloud analysis completed successfully!'
         }
         failure {
-            echo '[❌] Pipeline failed. Check logs for errors.'
-        }
-        always {
-            echo '[ℹ️] Pipeline execution finished.'
+            echo 'Pipeline failed. Check logs or SonarCloud dashboard.'
         }
     }
 }
