@@ -8,7 +8,7 @@ pipeline {
         // SonarCloud Configuration
         SONARQUBE_ENV = 'SonarCloud'
         SONAR_ORGANIZATION = 'pooja22796'
-        SONAR_PROJECT_KEY = 'pooja22796'
+        SONAR_PROJECT_KEY = 'pooja22796_devops'
     }
 
     stages {
