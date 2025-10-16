@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GIT_REPO = 'https://github.com/pooja22796/devops.git'
-        BRANCH = 'cmake'
+        BRANCH = main'
 
         // SonarCloud Configuration
         SONARQUBE_ENV = 'SonarCloud'
