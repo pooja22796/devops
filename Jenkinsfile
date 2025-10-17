@@ -77,7 +77,7 @@ pipeline {
         }
         stage('Upload to Artifactory') {
             steps {
-                withCredentials([string(credentialsId: 'd7102915-31fa-4d50-b5aa-fa93b7bc4ccc', variable: 'ACCESS_TOKEN')]) {
+                withCredentials([string(credentialsId: 'jfrogjenkins', variable: 'ACCESS_TOKEN')]) {
                     sh '''
                         ARTIFACT_PATH="build/myfirmware.bin"
                         ARTIFACT_NAME=$(basename $ARTIFACT_PATH)
@@ -88,7 +88,7 @@ pipeline {
                         fi
 
                         # Deploy to repo root (works reliably)
-                        UPLOAD_URL="https://trial9qz1lf.jfrog.io/artifactory/generic-local/$ARTIFACT_NAME"
+                        UPLOAD_URL="https://trial9qz1lf.jfrog.io/artifactory/generic-local/build/$ARTIFACT_NAME"
                         echo "Uploading $ARTIFACT_NAME to $UPLOAD_URL ..."
 
                         HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
