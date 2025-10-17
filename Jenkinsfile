@@ -75,6 +75,37 @@ pipeline {
                 '''
             }
         }
+       stage('Upload to Artifactory') {
+            steps {
+                withCredentials([string(credentialsId: 'd7102915-31fa-4d50-b5aa-fa93b7bc4ccc', variable: 'ACCESS_TOKEN')]) {
+                    sh '''
+                        ARTIFACT_PATH="build/myfirmware.bin"
+                        ARTIFACT_NAME=$(basename $ARTIFACT_PATH)
+
+                        if [ ! -f "$ARTIFACT_PATH" ]; then
+                            echo " Artifact file not found at $ARTIFACT_PATH"
+                            exit 1
+                        fi
+
+                        # Deploy to repo root (works reliably)
+                        UPLOAD_URL="https://trial9qz1lf.jfrog.io/artifactory/generic-local/$ARTIFACT_NAME"
+                        echo "Uploading $ARTIFACT_NAME to $UPLOAD_URL ..."
+
+                        HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+                            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                            -T "$ARTIFACT_PATH" \
+                            "$UPLOAD_URL")
+
+                        if [ "$HTTP_RESPONSE" -ge 200 ] && [ "$HTTP_RESPONSE" -lt 300 ]; then
+                            echo "Upload successful!"
+                        else
+                            echo "Upload failed with HTTP code $HTTP_RESPONSE"
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
         stage('Unit Tests') {
             steps {
                 echo 'Running unit tests...'
