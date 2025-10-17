@@ -77,7 +77,7 @@ pipeline {
         }
         stage('Upload to Artifactory') {
             steps {
-                withCredentials([string(credentialsId: 'd7102915-31fa-4d50-b5aa-fa93b7bc4ccc', variable: 'ACCESS_TOKEN')]) {
+                withCredentials([string(credentialsId: 'jfrog', variable: 'ACCESS_TOKEN')]) {
                     sh '''
                         ARTIFACT_PATH="build/myfirmware.bin"
                         ARTIFACT_NAME=$(basename $ARTIFACT_PATH)
